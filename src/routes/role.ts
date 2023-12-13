@@ -13,10 +13,10 @@ import { validateFields } from "../utils/errorHandlers";
 
 const router = Router();
 
-router.get("/", getAllRoles);
+router.get("/role", getAllRoles);
 
 router.post(
-  "/",
+  "/role",
   [
     check("name", "Name is required").not().isEmpty(),
     check("name", "Name must be unique").custom(uniqueRoleName),
@@ -26,7 +26,7 @@ router.post(
 );
 
 router.put(
-  "/:id",
+  "role/:id",
   [
     check("id").custom(existRoleId),
     check("name", "Name is required").not().isEmpty(),
@@ -38,7 +38,7 @@ router.put(
 );
 
 router.delete(
-  "/:id",
+  "role/:id",
   [check("id").custom(existRoleId), validateFields],
   deleteRole
 );

@@ -2,16 +2,21 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
+import { router as roleRouter } from "./routes/role";
+import { router as authRouter } from "./routes/auth";
+
 import { config } from "./config/config";
 import dbConnect from "./config/mongo";
-import { router as roleRouter } from "./routes/role";
+
 
 const PORT = config.port || 3001;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 app.use(roleRouter);
+app.use(authRouter);
 
 dbConnect().then(() => console.log("MongoDB connected"));
 
