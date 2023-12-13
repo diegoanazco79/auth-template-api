@@ -121,4 +121,43 @@ const loginController = async (req: Request, res: Response) => {
   }
 };
 
-export { invitationController, registerController, loginController };
+/* Handles a forgot password email */
+const forgotPasswordController = async (req: Request, res: Response) => {
+  try {
+    const token = sign({ email: req.body.email }, JWT_SECRET, {
+      expiresIn: "24h",
+    });
+
+    let transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: config.google_gmail.email,
+        pass: config.google_gmail.password,
+      },
+    });
+
+    await transporter.sendMail({
+      from: "Auth Template - Forgot Password",
+      to: req.body.email,
+      subject: "Recover your password ✔",
+      html: `
+        <b>Recover your password</b>
+        <p>To recover your password, please click on the following link:</p>
+        <a href="${config.frontend_url}/change-password/${token}">Recover your password</a>
+      `,
+    });
+
+    res.send({ message: "Email sent" });
+  } catch (error) {
+    handleHttpError(res, "Error forgot password");
+  }
+};
+
+export {
+  invitationController,
+  registerController,
+  loginController,
+  forgotPasswordController,
+};

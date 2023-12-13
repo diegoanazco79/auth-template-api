@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loginController = exports.registerController = exports.invitationController = void 0;
+exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
@@ -115,4 +115,36 @@ const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.loginController = loginController;
+/* Handles a forgot password email */
+const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const token = (0, jsonwebtoken_1.sign)({ email: req.body.email }, JWT_SECRET, {
+            expiresIn: "24h",
+        });
+        let transporter = nodemailer_1.default.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+                user: config_1.config.google_gmail.email,
+                pass: config_1.config.google_gmail.password,
+            },
+        });
+        yield transporter.sendMail({
+            from: "Auth Template - Forgot Password",
+            to: req.body.email,
+            subject: "Recover your password ✔",
+            html: `
+        <b>Recover your password</b>
+        <p>To recover your password, please click on the following link:</p>
+        <a href="${config_1.config.frontend_url}/change-password/${token}">Recover your password</a>
+      `,
+        });
+        res.send({ message: "Email sent" });
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error forgot password");
+    }
+});
+exports.forgotPasswordController = forgotPasswordController;
 //# sourceMappingURL=auth.js.map

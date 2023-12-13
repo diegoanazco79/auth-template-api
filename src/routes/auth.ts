@@ -5,10 +5,11 @@ import {
   invitationController,
   registerController,
   loginController,
+  forgotPasswordController,
 } from "../controllers/auth";
 
 import { existRoleId } from "../db-validators/role";
-import { uniqueUserEmail } from "../db-validators/auth";
+import { existEmailValidation, uniqueUserEmail } from "../db-validators/auth";
 import { validateFields } from "../utils/errorHandlers";
 
 const router = Router();
@@ -46,6 +47,17 @@ router.post(
     validateFields,
   ],
   loginController
+);
+
+router.post(
+  "/auth/forgot-password",
+  [
+    check("email", "Email is required").not().isEmpty(),
+    check("email", "Email is not valid").isEmail(),
+    check("email").custom(existEmailValidation),
+    validateFields,
+  ],
+  forgotPasswordController
 );
 
 export { router };
