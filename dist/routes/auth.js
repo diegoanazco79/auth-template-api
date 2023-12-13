@@ -24,4 +24,9 @@ router.post("/auth/register", [
     (0, express_validator_1.check)("status", "Not valid status").isIn(["active", "inactive"]),
     errorHandlers_1.validateFields,
 ], auth_1.registerController);
+router.post("/auth/login", [
+    (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
+    (0, express_validator_1.check)("password", "Password is required").not().isEmpty(),
+    errorHandlers_1.validateFields,
+], auth_1.loginController);
 //# sourceMappingURL=auth.js.map

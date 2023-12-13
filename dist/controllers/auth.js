@@ -12,13 +12,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerController = exports.invitationController = void 0;
+exports.loginController = exports.registerController = exports.invitationController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const user_1 = __importDefault(require("../models/user"));
+const role_1 = __importDefault(require("../models/role"));
 const errorHandlers_1 = require("../utils/errorHandlers");
 const bcryptHandlers_1 = require("../utils/bcryptHandlers");
+const jwtHandlers_1 = require("../utils/jwtHandlers");
 const config_1 = require("../config/config");
 const JWT_SECRET = config_1.config.jwt_secret || "secret";
 /* Handles a invitation user request */
@@ -77,4 +79,40 @@ const registerController = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.registerController = registerController;
+/* Handles a login request and verify the password */
+const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const currentUser = yield user_1.default.findOne({
+            email: req.body.email,
+        });
+        if (currentUser) {
+            const isPasswordCorrect = yield (0, bcryptHandlers_1.verify)(req.body.password, currentUser.password);
+            const isUserActive = currentUser.status === "active";
+            if (!isUserActive) {
+                res.status(400);
+                res.send({ message: "User is not active" });
+                return;
+            }
+            if (isPasswordCorrect) {
+                const token = yield (0, jwtHandlers_1.generateToken)(currentUser._id.toString());
+                const role = yield role_1.default.findOne({ id: currentUser.role }, { name: 1 });
+                const transformedUser = Object.assign(Object.assign({}, currentUser.toObject()), { token,
+                    role });
+                res.send(transformedUser);
+            }
+            else {
+                res.status(400);
+                res.send({ message: "Invalid email or password" });
+            }
+        }
+        else {
+            res.status(400);
+            res.send({ message: "Invalid email or password" });
+        }
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error login user");
+    }
+});
+exports.loginController = loginController;
 //# sourceMappingURL=auth.js.map

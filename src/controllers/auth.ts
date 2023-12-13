@@ -4,9 +4,11 @@ import { decode, sign } from "jsonwebtoken";
 import { Request, Response } from "express";
 
 import UserModel from "../models/user";
+import RoleModel from "../models/role";
 
 import { handleHttpError } from "../utils/errorHandlers";
-import { encrypt } from "../utils/bcryptHandlers";
+import { encrypt, verify } from "../utils/bcryptHandlers";
+import { generateToken } from "../utils/jwtHandlers";
 
 import { config } from "../config/config";
 
@@ -73,4 +75,50 @@ const registerController = async (req: Request, res: Response) => {
   }
 };
 
-export { invitationController, registerController };
+/* Handles a login request and verify the password */
+const loginController = async (req: Request, res: Response) => {
+  try {
+    const currentUser = await UserModel.findOne({
+      email: req.body.email,
+    });
+    if (currentUser) {
+      const isPasswordCorrect = await verify(
+        req.body.password,
+        currentUser.password
+      );
+
+      const isUserActive = currentUser.status === "active";
+      if (!isUserActive) {
+        res.status(400);
+        res.send({ message: "User is not active" });
+        return;
+      }
+
+      if (isPasswordCorrect) {
+        const token = await generateToken(currentUser._id.toString());
+
+        const role = await RoleModel.findOne(
+          { id: currentUser.role },
+          { name: 1 }
+        );
+
+        const transformedUser = {
+          ...currentUser.toObject(),
+          token,
+          role,
+        };
+        res.send(transformedUser);
+      } else {
+        res.status(400);
+        res.send({ message: "Invalid email or password" });
+      }
+    } else {
+      res.status(400);
+      res.send({ message: "Invalid email or password" });
+    }
+  } catch (error) {
+    handleHttpError(res, "Error login user");
+  }
+};
+
+export { invitationController, registerController, loginController };
