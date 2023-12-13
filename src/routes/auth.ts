@@ -10,7 +10,7 @@ import { validateFields } from "../utils/errorHandlers";
 const router = Router();
 
 router.post(
-  "auth/invite",
+  "/auth/invite",
   [
     check("email", "Email is required").not().isEmpty(),
     check("email", "Email is not valid").isEmail(),

@@ -9,7 +9,7 @@ const auth_2 = require("../db-validators/auth");
 const errorHandlers_1 = require("../utils/errorHandlers");
 const router = (0, express_1.Router)();
 exports.router = router;
-router.post("auth/invite", [
+router.post("/auth/invite", [
     (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
     (0, express_validator_1.check)("email", "Email is not valid").isEmail(),
     (0, express_validator_1.check)("email").custom(auth_2.uniqueUserEmail),

@@ -26,7 +26,7 @@ router.post(
 );
 
 router.put(
-  "role/:id",
+  "/role/:id",
   [
     check("id").custom(existRoleId),
     check("name", "Name is required").not().isEmpty(),
@@ -38,7 +38,7 @@ router.put(
 );
 
 router.delete(
-  "role/:id",
+  "/role/:id",
   [check("id").custom(existRoleId), validateFields],
   deleteRole
 );
