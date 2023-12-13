@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { check } from "express-validator";
+// import { check } from "express-validator";
 
 import {
   deleteRole,
@@ -18,8 +18,8 @@ router.get("/", getAllRoles);
 router.post(
   "/",
   [
-    check("name", "Name is required").not().isEmpty(),
-    check("name", "Name must be unique").custom(uniqueRoleName),
+    // check("name", "Name is required").not().isEmpty(),
+    // check("name", "Name must be unique").custom(uniqueRoleName),
     validateFields,
   ],
   postRole
@@ -28,9 +28,9 @@ router.post(
 router.put(
   "/:id",
   [
-    check("id").custom(existRoleId),
-    check("name", "Name is required").not().isEmpty(),
-    check("name", "Name must be unique").custom(uniqueRoleName),
+    // check("id").custom(existRoleId),
+    // check("name", "Name is required").not().isEmpty(),
+    // check("name", "Name must be unique").custom(uniqueRoleName),
     validateFields,
   ],
 
@@ -39,7 +39,10 @@ router.put(
 
 router.delete(
   "/:id",
-  [check("id").custom(existRoleId), validateFields],
+  [
+    // check("id").custom(existRoleId), 
+    validateFields
+  ],
   deleteRole
 );
 
