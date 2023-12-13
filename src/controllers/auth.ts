@@ -155,9 +155,33 @@ const forgotPasswordController = async (req: Request, res: Response) => {
   }
 };
 
+/* Change a password and validate current token */
+const resetPasswordController = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    const decodedToken = decode(token);
+    let currentUser;
+    if (typeof decodedToken === "object" && decodedToken !== null) {
+      currentUser = await UserModel.findOne({ email: decodedToken.email });
+    }
+    if (currentUser) {
+      const encryptedPassword = await encrypt(password);
+      const response = await UserModel.findOneAndUpdate(
+        { _id: currentUser._id },
+        { password: encryptedPassword },
+        { new: true }
+      );
+      res.send(response);
+    }
+  } catch (error) {
+    handleHttpError(res, "Error reset password");
+  }
+};
+
 export {
   invitationController,
   registerController,
   loginController,
   forgotPasswordController,
+  resetPasswordController,
 };

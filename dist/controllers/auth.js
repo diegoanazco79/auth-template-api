@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
+exports.resetPasswordController = exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
@@ -147,4 +147,24 @@ const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.forgotPasswordController = forgotPasswordController;
+/* Change a password and validate current token */
+const resetPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token, password } = req.body;
+        const decodedToken = (0, jsonwebtoken_1.decode)(token);
+        let currentUser;
+        if (typeof decodedToken === "object" && decodedToken !== null) {
+            currentUser = yield user_1.default.findOne({ email: decodedToken.email });
+        }
+        if (currentUser) {
+            const encryptedPassword = yield (0, bcryptHandlers_1.encrypt)(password);
+            const response = yield user_1.default.findOneAndUpdate({ _id: currentUser._id }, { password: encryptedPassword }, { new: true });
+            res.send(response);
+        }
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error reset password");
+    }
+});
+exports.resetPasswordController = resetPasswordController;
 //# sourceMappingURL=auth.js.map

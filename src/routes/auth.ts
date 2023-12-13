@@ -6,6 +6,7 @@ import {
   registerController,
   loginController,
   forgotPasswordController,
+  resetPasswordController,
 } from "../controllers/auth";
 
 import { existRoleId } from "../db-validators/role";
@@ -58,6 +59,16 @@ router.post(
     validateFields,
   ],
   forgotPasswordController
+);
+
+router.post(
+  "/auth/reset-password",
+  [
+    check("token", "Token is required").not().isEmpty(),
+    check("password", "Password is required").not().isEmpty(),
+    validateFields,
+  ],
+  resetPasswordController
 );
 
 export { router };

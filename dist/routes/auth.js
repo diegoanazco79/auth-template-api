@@ -35,4 +35,9 @@ router.post("/auth/forgot-password", [
     (0, express_validator_1.check)("email").custom(auth_2.existEmailValidation),
     errorHandlers_1.validateFields,
 ], auth_1.forgotPasswordController);
+router.post("/auth/reset-password", [
+    (0, express_validator_1.check)("token", "Token is required").not().isEmpty(),
+    (0, express_validator_1.check)("password", "Password is required").not().isEmpty(),
+    errorHandlers_1.validateFields,
+], auth_1.resetPasswordController);
 //# sourceMappingURL=auth.js.map
