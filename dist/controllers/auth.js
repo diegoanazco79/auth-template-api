@@ -12,10 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.invitationController = void 0;
+exports.registerController = exports.invitationController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
+const user_1 = __importDefault(require("../models/user"));
 const errorHandlers_1 = require("../utils/errorHandlers");
+const bcryptHandlers_1 = require("../utils/bcryptHandlers");
 const config_1 = require("../config/config");
 const JWT_SECRET = config_1.config.jwt_secret || "secret";
 /* Handles a invitation user request */
@@ -49,4 +52,29 @@ const invitationController = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.invitationController = invitationController;
+/* Handles a register request and create a user with password encripted */
+const registerController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token, password } = req.body;
+        const decodedToken = (0, jsonwebtoken_1.decode)(token);
+        const encryptedPassword = yield (0, bcryptHandlers_1.encrypt)(password);
+        let newUser;
+        if (typeof decodedToken === "object" && decodedToken !== null) {
+            newUser = {
+                email: decodedToken.email,
+                password: encryptedPassword,
+                firstName: decodedToken.firstName,
+                lastName: decodedToken.lastName,
+                status: "active",
+                role: decodedToken.role,
+            };
+        }
+        const response = yield user_1.default.create(Object.assign({ id: (0, uuid_1.v4)() }, newUser));
+        res.send(response);
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error creating user");
+    }
+});
+exports.registerController = registerController;
 //# sourceMappingURL=auth.js.map

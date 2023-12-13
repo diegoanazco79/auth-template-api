@@ -1,8 +1,13 @@
 import nodemailer from "nodemailer";
-import { sign } from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
+import { decode, sign } from "jsonwebtoken";
 import { Request, Response } from "express";
 
+import UserModel from "../models/user";
+
 import { handleHttpError } from "../utils/errorHandlers";
+import { encrypt } from "../utils/bcryptHandlers";
+
 import { config } from "../config/config";
 
 const JWT_SECRET = config.jwt_secret || "secret";
@@ -40,4 +45,32 @@ const invitationController = async (req: Request, res: Response) => {
   }
 };
 
-export { invitationController };
+/* Handles a register request and create a user with password encripted */
+const registerController = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+
+    const decodedToken = decode(token);
+    const encryptedPassword = await encrypt(password);
+
+    let newUser;
+
+    if (typeof decodedToken === "object" && decodedToken !== null) {
+      newUser = {
+        email: decodedToken.email,
+        password: encryptedPassword,
+        firstName: decodedToken.firstName,
+        lastName: decodedToken.lastName,
+        status: "active",
+        role: decodedToken.role,
+      };
+    }
+
+    const response = await UserModel.create({ id: uuidv4(), ...newUser });
+    res.send(response);
+  } catch (error) {
+    handleHttpError(res, "Error creating user");
+  }
+};
+
+export { invitationController, registerController };

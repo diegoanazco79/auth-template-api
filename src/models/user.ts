@@ -4,6 +4,11 @@ import { User } from "../interfaces/user";
 
 const UserSchema = new Schema<User>(
   {
+    id: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     email: {
       type: String,
       unique: true,
@@ -27,7 +32,7 @@ const UserSchema = new Schema<User>(
       required: true,
     },
     role: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: "roles",
       required: true,
     },

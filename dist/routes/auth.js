@@ -18,4 +18,10 @@ router.post("/auth/invite", [
     (0, express_validator_1.check)("role").custom(role_1.existRoleId),
     errorHandlers_1.validateFields,
 ], auth_1.invitationController);
+router.post("/auth/register", [
+    (0, express_validator_1.check)("token", "Token is required").not().isEmpty(),
+    (0, express_validator_1.check)("password", "Password is required").not().isEmpty(),
+    (0, express_validator_1.check)("status", "Not valid status").isIn(["active", "inactive"]),
+    errorHandlers_1.validateFields,
+], auth_1.registerController);
 //# sourceMappingURL=auth.js.map

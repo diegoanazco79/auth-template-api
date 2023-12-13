@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { check } from "express-validator";
 
-import { invitationController } from "../controllers/auth";
+import { invitationController, registerController } from "../controllers/auth";
 
 import { existRoleId } from "../db-validators/role";
 import { uniqueUserEmail } from "../db-validators/auth";
@@ -21,6 +21,17 @@ router.post(
     validateFields,
   ],
   invitationController
+);
+
+router.post(
+  "/auth/register",
+  [
+    check("token", "Token is required").not().isEmpty(),
+    check("password", "Password is required").not().isEmpty(),
+    check("status", "Not valid status").isIn(["active", "inactive"]),
+    validateFields,
+  ],
+  registerController
 );
 
 export { router };
