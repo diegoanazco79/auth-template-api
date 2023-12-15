@@ -7,6 +7,8 @@ import {
   loginController,
   forgotPasswordController,
   resetPasswordController,
+  signupController,
+  verifyController,
 } from "../controllers/auth";
 
 import { existRoleId } from "../db-validators/role";
@@ -14,6 +16,30 @@ import { existEmailValidation, uniqueUserEmail } from "../db-validators/auth";
 import { validateFields } from "../utils/errorHandlers";
 
 const router = Router();
+
+router.post(
+  "/auth/signup",
+  [
+    check("email", "Email is required").not().isEmpty(),
+    check("email", "Email is not valid").isEmail(),
+    check("email").custom(uniqueUserEmail),
+    check("firstName", "First name is required").not().isEmpty(),
+    check("lastName", "Last name is required").not().isEmpty(),
+    check("password", "Password is required").not().isEmpty(),
+    check("role").custom(existRoleId),
+    validateFields,
+  ],
+  signupController
+)
+
+router.post(
+  "/auth/verify",
+  [
+    check("token", "Token is required").not().isEmpty(),
+    validateFields,
+  ],
+  verifyController
+)
 
 router.post(
   "/auth/invite",

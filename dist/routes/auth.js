@@ -9,6 +9,20 @@ const auth_2 = require("../db-validators/auth");
 const errorHandlers_1 = require("../utils/errorHandlers");
 const router = (0, express_1.Router)();
 exports.router = router;
+router.post("/auth/signup", [
+    (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
+    (0, express_validator_1.check)("email", "Email is not valid").isEmail(),
+    (0, express_validator_1.check)("email").custom(auth_2.uniqueUserEmail),
+    (0, express_validator_1.check)("firstName", "First name is required").not().isEmpty(),
+    (0, express_validator_1.check)("lastName", "Last name is required").not().isEmpty(),
+    (0, express_validator_1.check)("password", "Password is required").not().isEmpty(),
+    (0, express_validator_1.check)("role").custom(role_1.existRoleId),
+    errorHandlers_1.validateFields,
+], auth_1.signupController);
+router.post("/auth/verify", [
+    (0, express_validator_1.check)("token", "Token is required").not().isEmpty(),
+    errorHandlers_1.validateFields,
+], auth_1.verifyController);
 router.post("/auth/invite", [
     (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
     (0, express_validator_1.check)("email", "Email is not valid").isEmail(),

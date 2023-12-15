@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPasswordController = exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
+exports.verifyController = exports.signupController = exports.resetPasswordController = exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
@@ -23,11 +23,67 @@ const bcryptHandlers_1 = require("../utils/bcryptHandlers");
 const jwtHandlers_1 = require("../utils/jwtHandlers");
 const config_1 = require("../config/config");
 const JWT_SECRET = config_1.config.jwt_secret || "secret";
+/* Handles a signup user request */
+const signupController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const token = (0, jsonwebtoken_1.sign)(req.body, JWT_SECRET, { expiresIn: "24h" });
+        const { firstName } = req.body;
+        let transporter = nodemailer_1.default.createTransport({
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
+            auth: {
+                user: config_1.config.google_gmail.email,
+                pass: config_1.config.google_gmail.password,
+            },
+        });
+        yield transporter.sendMail({
+            from: "Auth-Template: Verify your email",
+            to: req.body.email,
+            subject: "Verify your email ✔",
+            html: `
+        <b>Verify your email: ${firstName}</b>
+        <p>To complete your registration, please click on the following link:</p>
+        <a href="${config_1.config.frontend_url}/verify/${token}">Complete your registration</a>
+      `,
+        });
+        res.send({ message: "Invitation sent" });
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error signup user");
+    }
+});
+exports.signupController = signupController;
+/* Handles a verify user email request */
+const verifyController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        const decodedToken = (0, jsonwebtoken_1.decode)(token);
+        let newUser;
+        if (typeof decodedToken === "object" && decodedToken !== null) {
+            const encryptedPassword = yield (0, bcryptHandlers_1.encrypt)(decodedToken.password);
+            newUser = {
+                email: decodedToken.email,
+                password: encryptedPassword,
+                firstName: decodedToken.firstName,
+                lastName: decodedToken.lastName,
+                status: "active",
+                role: decodedToken.role,
+            };
+        }
+        const response = yield user_1.default.create(Object.assign({ id: (0, uuid_1.v4)() }, newUser));
+        res.send(response);
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error verify user");
+    }
+});
+exports.verifyController = verifyController;
 /* Handles a invitation user request */
 const invitationController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = (0, jsonwebtoken_1.sign)(req.body, JWT_SECRET, { expiresIn: "24h" });
-        const { username } = req.body;
+        const { firstName } = req.body;
         let transporter = nodemailer_1.default.createTransport({
             host: "smtp.gmail.com",
             port: 465,
@@ -40,9 +96,9 @@ const invitationController = (req, res) => __awaiter(void 0, void 0, void 0, fun
         yield transporter.sendMail({
             from: "Auth-Template Invitation: Complete your registration",
             to: req.body.email,
-            subject: "Complete tu registro ✔",
+            subject: "Complete your registration ✔",
             html: `
-        <b>Complete your registration ${username}</b>
+        <b>Complete your registration ${firstName}</b>
         <p>To complete your registration, please click on the following link:</p>
         <a href="${config_1.config.frontend_url}/register/${token}">Complete your registration</a>
       `,
