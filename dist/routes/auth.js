@@ -19,10 +19,7 @@ router.post("/auth/signup", [
     (0, express_validator_1.check)("role").custom(role_1.existRoleId),
     errorHandlers_1.validateFields,
 ], auth_1.signupController);
-router.post("/auth/verify", [
-    (0, express_validator_1.check)("token", "Token is required").not().isEmpty(),
-    errorHandlers_1.validateFields,
-], auth_1.verifyController);
+router.post("/auth/verify", [(0, express_validator_1.check)("token", "Token is required").not().isEmpty(), errorHandlers_1.validateFields], auth_1.verifyController);
 router.post("/auth/invite", [
     (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
     (0, express_validator_1.check)("email", "Email is not valid").isEmail(),
@@ -43,6 +40,10 @@ router.post("/auth/login", [
     (0, express_validator_1.check)("password", "Password is required").not().isEmpty(),
     errorHandlers_1.validateFields,
 ], auth_1.loginController);
+router.post("/auth/google-login", [
+    (0, express_validator_1.check)("token", "Token is required").not().isEmpty(),
+    errorHandlers_1.validateFields
+], auth_1.googleLoginController);
 router.post("/auth/forgot-password", [
     (0, express_validator_1.check)("email", "Email is required").not().isEmpty(),
     (0, express_validator_1.check)("email", "Email is not valid").isEmail(),

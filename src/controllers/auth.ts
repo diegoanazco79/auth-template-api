@@ -181,6 +181,65 @@ const loginController = async (req: Request, res: Response) => {
   }
 };
 
+/* Handles a google login request */
+const googleLoginController = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    const decodedToken = decode(token);
+    
+    if (typeof decodedToken === "object" && decodedToken !== null) {
+      const regularRole = await RoleModel.findOne({ name: "regular" });
+      const currentUser = await UserModel.findOne({ email: decodedToken.email });
+
+      if (!currentUser) {
+
+        const newUser = {
+          email: decodedToken.email,
+          password: "google-password",
+          firstName: decodedToken.given_name,
+          lastName: decodedToken.family_name,
+          status: "active",
+          role: regularRole.id,
+        };
+
+        await UserModel.create({ id: uuidv4(), ...newUser });
+        const user = await UserModel.findOne({ email: decodedToken.email });
+        const role = await RoleModel.findOne(
+          { id: user.role },
+          { name: 1 }
+        );
+        const token = await generateToken(user._id.toString());
+        const transformedUser = {
+          ...user.toObject(),
+          token,
+          role,
+        };
+        res.send(transformedUser);
+      } else {
+        const isUserActive = currentUser.status === "active";
+        if (!isUserActive) {
+          res.status(400);
+          res.send({ message: "User is not active" });
+          return;
+        }
+        const role = await RoleModel.findOne(
+          { id: currentUser.role },
+          { name: 1 }
+        )
+        const token = await generateToken(currentUser._id.toString());
+        const transformedUser = {
+          ...currentUser.toObject(),
+          token,
+          role,
+        };
+        res.send(transformedUser);
+      }
+    }
+  } catch (error) {
+    handleHttpError(res, "Error google login");
+  }
+}
+
 /* Handles a forgot password email */
 const forgotPasswordController = async (req: Request, res: Response) => {
   try {
@@ -239,10 +298,11 @@ const resetPasswordController = async (req: Request, res: Response) => {
 };
 
 export {
-  invitationController,
-  registerController,
-  loginController,
   forgotPasswordController,
+  googleLoginController,
+  invitationController,
+  loginController,
+  registerController,
   resetPasswordController,
   signupController,
   verifyController,

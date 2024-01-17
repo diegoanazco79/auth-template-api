@@ -9,6 +9,7 @@ import {
   resetPasswordController,
   signupController,
   verifyController,
+  googleLoginController,
 } from "../controllers/auth";
 
 import { existRoleId } from "../db-validators/role";
@@ -30,16 +31,13 @@ router.post(
     validateFields,
   ],
   signupController
-)
+);
 
 router.post(
   "/auth/verify",
-  [
-    check("token", "Token is required").not().isEmpty(),
-    validateFields,
-  ],
+  [check("token", "Token is required").not().isEmpty(), validateFields],
   verifyController
-)
+);
 
 router.post(
   "/auth/invite",
@@ -74,6 +72,15 @@ router.post(
     validateFields,
   ],
   loginController
+);
+
+router.post(
+  "/auth/google-login",
+  [
+    check("token", "Token is required").not().isEmpty(),
+     validateFields
+  ],
+  googleLoginController
 );
 
 router.post(

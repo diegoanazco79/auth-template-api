@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyController = exports.signupController = exports.resetPasswordController = exports.forgotPasswordController = exports.loginController = exports.registerController = exports.invitationController = void 0;
+exports.verifyController = exports.signupController = exports.resetPasswordController = exports.registerController = exports.loginController = exports.invitationController = exports.googleLoginController = exports.forgotPasswordController = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const uuid_1 = require("uuid");
 const jsonwebtoken_1 = require("jsonwebtoken");
@@ -171,6 +171,51 @@ const loginController = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.loginController = loginController;
+/* Handles a google login request */
+const googleLoginController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { token } = req.body;
+        const decodedToken = (0, jsonwebtoken_1.decode)(token);
+        if (typeof decodedToken === "object" && decodedToken !== null) {
+            const regularRole = yield role_1.default.findOne({ name: "regular" });
+            const currentUser = yield user_1.default.findOne({ email: decodedToken.email });
+            if (!currentUser) {
+                const newUser = {
+                    email: decodedToken.email,
+                    password: "google-password",
+                    firstName: decodedToken.given_name,
+                    lastName: decodedToken.family_name,
+                    status: "active",
+                    role: regularRole.id,
+                };
+                yield user_1.default.create(Object.assign({ id: (0, uuid_1.v4)() }, newUser));
+                const user = yield user_1.default.findOne({ email: decodedToken.email });
+                const role = yield role_1.default.findOne({ id: user.role }, { name: 1 });
+                const token = yield (0, jwtHandlers_1.generateToken)(user._id.toString());
+                const transformedUser = Object.assign(Object.assign({}, user.toObject()), { token,
+                    role });
+                res.send(transformedUser);
+            }
+            else {
+                const isUserActive = currentUser.status === "active";
+                if (!isUserActive) {
+                    res.status(400);
+                    res.send({ message: "User is not active" });
+                    return;
+                }
+                const role = yield role_1.default.findOne({ id: currentUser.role }, { name: 1 });
+                const token = yield (0, jwtHandlers_1.generateToken)(currentUser._id.toString());
+                const transformedUser = Object.assign(Object.assign({}, currentUser.toObject()), { token,
+                    role });
+                res.send(transformedUser);
+            }
+        }
+    }
+    catch (error) {
+        (0, errorHandlers_1.handleHttpError)(res, "Error google login");
+    }
+});
+exports.googleLoginController = googleLoginController;
 /* Handles a forgot password email */
 const forgotPasswordController = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
