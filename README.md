@@ -2,6 +2,8 @@
 
 Auth Template REST API built with Node.js, Express, and MongoDB. This project provides a robust platform for managing user authentication through Google and conventional methods (email and password). Additionally, it includes essential features such as password recovery and the registration process, both with the ability to send emails for a complete and secure user experience.
 
+Explore a live demo of the project [here](https://auth-template-topaz.vercel.app/login).
+
 ## Deployment on Vercel
 
 This project is designed to be deployed on Vercel. Make sure to have an account on Vercel and follow the appropriate deployment steps.
